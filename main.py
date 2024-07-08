@@ -24,7 +24,8 @@ load_dotenv()
 #
 
 # model: databricks/dbrx-instruct
-llm = ChatOpenAI(model="codellama/CodeLlama-7b-Instruct-hf",
+# model: codellama/CodeLlama-7b-Instruct-hf
+llm = ChatOpenAI(model="databricks/dbrx-instruct",
                  temperature=0.7,
                  api_key=os.getenv("OPENAI_API_KEY"),
                  base_url="https://api.together.xyz")
