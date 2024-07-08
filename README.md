@@ -4,7 +4,8 @@ DoomBerg pulls in S&P500 data, recent news, and runs a negative analysis on the 
 
 ## N8n Setup
 For news and vector embeddings of 10k reports. 
-<img width="943" alt="image" src="https://github.com/VDuda/doomberg/assets/6300279/52a53836-e43e-4ae6-a4c8-edf7fd18afac">
+<img width="1287" alt="image" src="https://github.com/VDuda/doomberg/assets/6300279/bb5b07ad-2ad5-439b-8d61-0a9a8a49bb75">
+
 
 
 ## Setup
