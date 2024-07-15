@@ -4,31 +4,37 @@ from langchain_openai import ChatOpenAI
 
 from langchain_community.tools import DuckDuckGoSearchRun
 from langchain_community.tools import BraveSearch
-from tools.sec_tools import SecTools
+# from tools.sec_tools import SecTools
+from langchain.tools import Tool
 #from tools.openbb_tools import OpenBBTools
 
-from langchain_mistralai.chat_models import ChatMistralAI
 from langchain_community.chat_models import ChatDatabricks
+# from langchain import SecretStr
+from openai import OpenAI
+from langchain.tools import DuckDuckGoSearchRun
 from dotenv import load_dotenv
 
 load_dotenv()
 
-#search_tool = BraveSearch.from_api_key(api_key=api_key,
-#                                       search_kwargs={"count": 3})
-#openbb_tool = OpenBBTools()
+# How to get your Databricks token: https://docs.databricks.com/en/dev-tools/auth/pat.html
+DATABRICKS_TOKEN = os.getenv('DATABRICKS_TOKEN', "")
+# Alternatively in a Databricks notebook you can use this:
+# DATABRICKS_TOKEN = dbutils.notebook.entry_point.getDbutils().notebook().getContext().apiToken().get()
+# llm = OpenAI(
+#     api_key=DATABRICKS_TOKEN,
+#     base_url="https://dbc-51f53b81-988e.cloud.databricks.com/serving-endpoints"
+# )
 
 # sec_tool = SecTools()
 
-# Create a chat model
-# Using service http://together.ai
-#
-
 # model: databricks/dbrx-instruct
 # model: codellama/CodeLlama-7b-Instruct-hf
-llm = ChatOpenAI(model="databricks/dbrx-instruct",
-                 temperature=0.7,
-                 api_key=os.getenv("OPENAI_API_KEY"),
-                 base_url="https://api.together.xyz")
+llm = ChatOpenAI(
+    model="databricks/dbrx-instruct",
+    temperature=0.7,
+    api_key=os.getenv("DATABRICKS_TOKEN"),
+    base_url=os.getenv("DATABRICKS_BASE_URL")
+)
 
 #llm_writer = ChatOpenAI(model="teknium/OpenHermes-2p5-Mistral-7B",
 #                        temperature=0.7,
@@ -36,6 +42,13 @@ llm = ChatOpenAI(model="databricks/dbrx-instruct",
 
 #llm = ChatMistralAI(model="mistral-medium", temperature=0.7)
 #llm_writer = ChatAnthropic(model='claude-3-haiku-20240307')
+search = DuckDuckGoSearchRun()
+
+search_tool = Tool(
+    name="searchTool",
+    description=
+    "A search tool used to query DuckDuckGo for search results when trying to find information from the internet.",
+    func=search.run)
 
 # Define your agents with roles and goals
 researcher = Agent(
@@ -45,7 +58,7 @@ researcher = Agent(
     """You work as a research analyst at Goldman Sachs, focusing on fundamental research for tech companies""",
     verbose=True,
     allow_delegation=False,
-    # tools=[SecTools.sec_nvda],
+    tools=[search_tool],
     llm=llm)
 
 financeModelBuilder = Agent(
@@ -55,6 +68,7 @@ financeModelBuilder = Agent(
     """you are a technologically inclined finance expert with a keen eye for identifying emerging trends and predicting their potential impact on various industries. Your ability to think critically and connect seemingly disparate dots allows you to anticipate disruptive technologies and their far-reaching implications.""",
     verbose=True,
     allow_delegation=False,
+    tools=[search_tool],
     llm=llm)
 
 programmer = Agent(
@@ -64,6 +78,7 @@ programmer = Agent(
     """You are a details-oriented dash app programmer at plotly known for your insightful and engaging dash apps. You transform complex concepts into factual and impactful dash apps. You are an expert in coding in python""",
     verbose=True,
     llm=llm,
+    tools=[search_tool],
     allow_delegation=True)
 
 # Create tasks for your agents
@@ -73,7 +88,7 @@ task1 = Task(
 
   Business Overview: Briefly describe Nvidia's business model, its products and services, and its target market.
 
-  Doom Score: 
+  Doom Score: Describe the negative impact of the SEC 10-K filing on Nvidia's guidance generate a score out of 10 to represent this level of doom.
 
   Risk Factors: Identify and discuss the major risk factors that Nvidia has disclosed in its 10-K filing.
 
@@ -107,7 +122,7 @@ Provide a detailed analysis of the technology's potential impact, backed by rele
 
 task3 = Task(
     description=
-    """Using the insights provided by the Senior Doom Research Analyst and financeModelBuilder,please craft an expertly styled report that is targeted towards the investor community. Make sure to also include the long-term implications insights that your co-worker, financeModelBuilder, has shared. Please ensure that the report is written in a professional tone and style, and that all information is sourced from Nvidia's latest SEC 10-K filing. 
+    """Using the insights provided by the Senior Doom Research Analyst and financeModelBuilder,please craft an expertly styled report that is targeted towards the investor community. Make sure to also include the long-term implications insights that your co-worker, financeModelBuilder, has shared. Please ensure that the report is written in a professional tone and style, and that all information is sourced from Nvidia's latest SEC 10-K filing.
     
     Using plotly/dash v2.16.0, generate a dash app""",
     expected_output=

@@ -10,8 +10,13 @@ For news and vector embeddings of 10k reports.
 
 ## Setup
 
+```
+pip install -r requirements.txt
+```
+
 ```env
-OPENAI_API_KEY=a88... #set to DBRX API
+DATABRICKS_TOKEN=a88... #set to DBRX API
+DATABRICKS_BASE_URL=https://dbrx-base-url.com #set to dbrx url
 ```
 
 ## Run
